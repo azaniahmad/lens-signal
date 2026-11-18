@@ -1,0 +1,58 @@
+name: AI Agent Lens Signals
+
+# Runs hourly: builds exchange-data packets, applies AGENT_PROMPT decision rules,
+# sends LONG/SHORT alerts + a status heartbeat to Telegram.
+#
+# Required repository secrets (Settings -> Secrets and variables -> Actions):
+#   TELEGRAM_BOT_TOKEN   from @BotFather
+#   TELEGRAM_CHAT_ID     your chat id
+#
+# Stdlib only. No pip install.
+
+on:
+  schedule:
+    - cron: "0 * * * *"   # every hour, on the hour (UTC). GitHub may delay 5-15 min.
+  workflow_dispatch: {}   # manual run from the Actions tab
+
+concurrency:
+  group: lens-signals
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  signals:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      # Dedupe state so the same signal is not alerted every single hour.
+      - name: Restore telegram dedupe state
+        uses: actions/cache@v4
+        with:
+          path: port/telegram_state.json
+          key: lens-telegram-state-${{ github.sha }}
+          restore-keys: |
+            lens-telegram-state-
+
+      - name: Run signal pass
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python port/runner.py --once --config port/runner_config.ci.json
+
+      - name: Show signal summary
+        if: always()
+        run: |
+          f=$(ls -t port/signals/*_summary.json | head -1)
+          echo "summary: $f"
+          python -c "import json,sys; d=json.load(open(sys.argv[1],encoding='utf-8')); [print(s['symbol'], s['timeframe'], s['decision'], 'conf', s['confidence']) for s in d['signals']]" "$f"
+
+      - name: Save dedupe state
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: port/telegram_state.json
+          key: lens-telegram-state-${{ github.sha }}

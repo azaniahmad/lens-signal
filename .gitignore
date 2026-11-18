@@ -2,3 +2,17 @@ packets/
 __pycache__/
 *.pyc
 .DS_Store
+
+# Credentials - NEVER commit. Use GitHub Actions secrets instead.
+port/telegram_config.json
+port/telegram_token.txt
+port/telegram_state.json
+port/telegram.log
+
+# Runtime output / logs
+port/signals/
+port/runner.log
+port/runner_err.log
+receiver_out.log
+receiver_err.log
+port/webhook_token.txt

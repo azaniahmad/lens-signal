@@ -1,0 +1,27 @@
+{
+  "account_usd": 2.56,
+  "risk_pct": 1.0,
+  "min_rr_t2": 2.0,
+  "max_leverage": 3,
+  "no_against_htf": true,
+  "block_high_volatility": true,
+  "symbols": [
+    {"symbol": "BTC_USDT", "tf": "4h", "htf": "1d"},
+    {"symbol": "BTC_USDT", "tf": "1h", "htf": "4h"},
+    {"symbol": "ETH_USDT", "tf": "4h", "htf": "1d"},
+    {"symbol": "ETH_USDT", "tf": "1h", "htf": "4h"},
+    {"symbol": "ETH_USDT", "tf": "15m", "htf": "1h"}
+  ],
+  "interval_seconds": 3600,
+  "webhook": {
+    "post": false,
+    "_note_ci": "No local receiver on GitHub Actions, so packets are not POSTed. Signal logic is identical either way."
+  },
+  "telegram": {
+    "enabled": true,
+    "notify_on_status": true,
+    "status_every_runs": 1,
+    "credentials_from": "env TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID (GitHub Actions secrets)"
+  },
+  "out_dir": "port/signals"
+}
